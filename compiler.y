@@ -46,7 +46,7 @@ Functions:Function Functions;
 Functions:Function;
 Function: Fdecl Body;
 
-Fdecl: tINT tID tPO tPF;
+Fdecl: tTYPE tID tPO tPF;
 
 Body: tAO Instructions tAF;
 
@@ -54,9 +54,13 @@ Instructions: Instruction Instructions;
 Instructions: ;
 Instruction: Decl;
 Instruction: tPRINTF tPO tID tPF;
-Instruction: tIF tPO Expr tPF Body tELSE Body;
-Instruction: tIF tPO Expr tPF Body;
-Instruction: tWHILE tPO Expr tPF Body;
+Instruction: tIF tPO ExprBool tPF Body tELSE Body;
+Instruction: tIF tPO ExprBool tPF Body;
+Instruction: tWHILE tPO ExprBool tPF Body;
+
+ExprBool:tID Compare tID;
+ExprBool:tENTIER Compare tENTIER;
+Compare: tEQL | tLSS | tGTR | tLEQ | tGEQ;
 
 Decl: tTYPE Aff;
 Aff: tID tEQL Expr tSEMICOLON;
