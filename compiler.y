@@ -1,4 +1,6 @@
 %{
+    #define YYDEBUG 0
+    
 	int yylex(void);
 	void yyerror(char*);
 %}
@@ -66,3 +68,12 @@ Decl: tTYPE Aff;
 Aff: tID tEQL Expr tSEMICOLON;
 
 Expr: tENTIER;
+
+%%
+
+int main(void) {
+#if YYDEBUG
+    yydebug = 1;
+#endif
+    yyparse();
+}
