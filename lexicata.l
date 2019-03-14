@@ -22,13 +22,16 @@ void bug();
 ">"                  { return tGTR;        }
 "<="                 { return tLEQ;        }
 ">="                 { return tGEQ;        }
-"\t"				 { return tTAB;        }
+"\t"				 { /*return tTAB;*/        }
 "\n"				 { /*return tNEWLINE;*/        }
-" "					 { return tSPACE;      }
+" "					 { /*return tSPACE; */     }
 "main" 				 { return tMAIN; }
 "const"				 { return tCONST; }
 "printf"			 { return tPRINTF;      }
-"int"				 { return tINT; }
+("int"|"bool"|"char"|"float") { return tTYPE; }
+"if"				 { return tIF; }
+"else"				 { return tELSE; }
+"while"				 { return tWHILE; }
 [\-\+]?[0-9]+e[0-9]+ { return tENTIER; }
 [\-\+]?[0-9]+ 		 { return tENTIER; }
 [a-zA-Z][a-zA-Z0-9_]* { return tID; }

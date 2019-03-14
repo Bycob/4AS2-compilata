@@ -25,8 +25,11 @@
 %token tMAIN
 %token tCONST
 %token tPRINTF
-%token tINT
+%token tTYPE
 %token tENTIER
+%token tIF
+%token tELSE
+%token tWHILE
 %token tID
 
 %%
@@ -43,7 +46,11 @@ Body: tAO Instructions tAF;
 Instructions: Instruction Instructions;
 Instructions: ;
 Instruction: Decl;
+Instruction: tPRINTF tPO tID tPF;
+Instruction: tIF tPO Expr tPF Body tELSE Body;
+Instruction: tIF tPO Expr tPF Body;
+Instruction: tWHILE tPO Expr tPF Body;
 
-Decl: tINT Aff;
+Decl: tTYPE Aff;
 Aff: tID tEQL Expr tSEMICOLON;
 Expr: tENTIER;
