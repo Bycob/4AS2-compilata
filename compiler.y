@@ -64,6 +64,13 @@ ExprBool:tID Compare tID;
 ExprBool:tENTIER Compare tENTIER;
 Compare: tEQL | tLSS | tGTR | tLEQ | tGEQ;
 
+ExprArithm: tID Operator tID;
+ExprArithm: ExprArithm Operator tID;
+ExprArithm: tID Operator ExprArithm;
+ExprArithm: ExprArithm Operator ExprArithm;
+Operator:tPLUS | tMINUS;
+
+
 Decl: tTYPE Aff;
 Aff: tID tEQL Expr tSEMICOLON;
 
