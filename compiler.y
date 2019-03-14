@@ -53,4 +53,5 @@ Instruction: tWHILE tPO Expr tPF Body;
 
 Decl: tTYPE Aff;
 Aff: tID tEQL Expr tSEMICOLON;
+
 Expr: tENTIER;
