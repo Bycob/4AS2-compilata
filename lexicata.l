@@ -25,16 +25,15 @@ void bug();
 "\t"				 { /*return tTAB;*/        }
 "\n"				 { /*return tNEWLINE;*/        }
 " "					 { /*return tSPACE; */     }
-"main" 				 { return tMAIN; }
 "const"				 { return tCONST; }
 "printf"			 { return tPRINTF;      }
 ("int"|"bool"|"char"|"float") { return tTYPE; }
 "if"				 { return tIF; }
 "else"				 { return tELSE; }
 "while"				 { return tWHILE; }
-[\-\+]?[0-9]+e[0-9]+ { return tENTIER; }
-[\-\+]?[0-9]+ 		 { return tENTIER; }
-[a-zA-Z][a-zA-Z0-9_]* { return tID; }
+[\-\+]?[0-9]+e[0-9]+ { yylval.nb = atoi(yytext); return tENTIER; }
+[\-\+]?[0-9]+ 		 { yylval.nb = atoi(yytext); return tENTIER; }
+[a-zA-Z][a-zA-Z0-9_]* { yylval.str = yytext; return tID; }
 . 					 { bug();      }
 
 

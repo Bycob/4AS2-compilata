@@ -22,7 +22,6 @@
 %token tTAB
 %token tNEWLINE
 %token tSPACE
-%token tMAIN
 %token tCONST
 %token tPRINTF
 %token tTYPE
@@ -31,6 +30,14 @@
 %token tELSE
 %token tWHILE
 %token tID
+
+%union {
+    int nb;
+    char* str;
+}
+
+%type<nb> tENTIER
+%type<str> tID
 
 %%
 start:Functions;
