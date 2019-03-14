@@ -30,4 +30,20 @@
 %token tID
 
 %%
-start:tMAIN;
+start:Functions;
+
+Functions:Function Functions;
+Functions:Function;
+Function: Fdecl Body;
+
+Fdecl: tINT tID tPO tPF;
+
+Body: tAO Instructions tAF;
+
+Instructions: Instruction Instructions;
+Instructions: ;
+Instruction: Decl;
+
+Decl: tINT Aff;
+Aff: tID tEQL Expr tSEMICOLON;
+Expr: tENTIER;
