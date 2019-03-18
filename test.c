@@ -3,4 +3,7 @@ int main() {
 	if (age >= dix){
   		int zou = 2;
 	}
+	else {
+	int zou = 3;	
+	}
 }

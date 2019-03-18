@@ -34,8 +34,8 @@
 
 	/*..exceptions in rulata..*/
 	int is_in_table(lt_symbol_table *table, char* name);
-	void error_declare1(lt_symbol_table *table, char* name1, char* name2);
-	void error_declare2(lt_symbol_table *table, char* name1, char* name2);
+	void error_declare1(lt_symbol_table *table, char* name);
+	void error_declare2(lt_symbol_table *table, char* name);
 %}
 
 %token tPLUS
@@ -84,7 +84,7 @@ Function: Fdecl Body;
 
 Fdecl: tTYPE tID tPO tPF { 
 printf("%x\n", ref_symbols);
-error_declare2(ref_symbols,$2,$2);
+error_declare2(ref_symbols,$2);
 };
 
 Body: tAO Instructions tAF;
@@ -94,7 +94,7 @@ Instructions: ;
 Instruction: Decl;
 Instruction: ExprArithm;
 Instruction: tPRINTF tPO tID tPF  {
-error_declare1(ref_symbols,$3,$3);
+error_declare1(ref_symbols,$3);
 };
 Instruction: tIF tPO ExprBool tPF Body tELSE Body;
 Instruction: tIF tPO ExprBool tPF Body;
@@ -102,7 +102,8 @@ Instruction: tWHILE tPO ExprBool tPF Body;
 
 ExprBool:Decl Compare Decl;
 ExprBool:tID Compare tID {
-error_declare1(ref_symbols,$1,$3);
+error_declare1(ref_symbols,$1);
+error_declare1(ref_symbols,$3);
 };
 ExprBool:tENTIER Compare tENTIER /*{
 	if (!is_in_table(ref_symbols,$1)||!is_in_table(ref_symbols,$3)) {
@@ -115,14 +116,15 @@ ExprBool:tENTIER Compare tENTIER /*{
 Compare: tEQL | tLSS | tGTR | tLEQ | tGEQ;
 
 ExprArithm: tID Operator tID {
-error_declare1(ref_symbols,$1,$3);
+error_declare1(ref_symbols,$1);
+error_declare1(ref_symbols,$3);
 };
 ExprArithm: ExprArithm Operator ExprArithm;
 Operator:tPLUS | tMINUS;
 
 
 Decl: tTYPE Aff  {
-error_declare2(ref_symbols,$1,$1);
+error_declare2(ref_symbols,$1);
 };
 Aff: tID tEQL Expr tSEMICOLON {
 
@@ -171,13 +173,13 @@ int is_in_table(lt_symbol_table *table, char* name) {
     return get_symbol_by_name(table, name) != NULL;
 }
 
-void error_declare1(lt_symbol_table *table, char* name1, char* name2){
-	if (!is_in_table(table,name1) || !is_in_table(table,name2)) {
+void error_declare1(lt_symbol_table *table, char* name){
+	if (!is_in_table(table,name)) {
 		printf("exception var not declared\n");
 	}
 }
-void error_declare2(lt_symbol_table *table, char* name1, char* name2){
-	if (is_in_table(table,name1) || is_in_table(table,name2)) {
+void error_declare2(lt_symbol_table *table, char* name){
+	if (is_in_table(table,name)) {
 		printf("exception var already declared\n");
 	}
 }
