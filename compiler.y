@@ -78,59 +78,50 @@
 %%
 start:Functions;
 
-Functions:Function Functions;
-Functions:Function;
-Function: Fdecl Body;
-
-Fdecl: tTYPE tID tPO tPF { 
-lt_check_error_declared(ref_symbols,$2);
-};
+/* General */
 
 Body: tAO Instructions tAF;
 
-Instructions: Instruction Instructions;
-Instructions: ;
-Instruction: Decl;
-Instruction: ExprArithm;
-Instruction: tPRINTF tPO tID tPF  {
-lt_check_error_notdeclared(ref_symbols,$3);
-};
-Instruction: tIF tPO ExprBool tPF Body tELSE Body;
-Instruction: tIF tPO ExprBool tPF Body;
-Instruction: tWHILE tPO ExprBool tPF Body;
+/* Fonctions */
 
-ExprBool:ExprArithm Compare ExprArithm;
-ExprBool:tID Compare tID {
-lt_check_error_notdeclared(ref_symbols,$1);
-lt_check_error_notdeclared(ref_symbols,$3);
+Functions:Function Functions | Function;
+Function: Fdecl Body;
+
+Fdecl: tTYPE tID tPO tPF {
+    printf("%p\n", ref_symbols);
+    lt_check_error_declared(ref_symbols,$2);
 };
-ExprBool:tENTIER Compare tENTIER /*{
-	if (!is_in_table(ref_symbols,$1)||!is_in_table(ref_symbols,$3)) {
-		printf("exception var not declared\n");
-	}
-	else if (!is_int($1)||!is_int($3))  {
-		printf("exception var not int\n");
-	}	
-}*/;
+
+Instructions: Instruction Instructions | ;
+Instruction: InstructionBody tSEMICOLON
+    | tIF tPO ExprBool tPF Body tELSE Body
+    | tIF tPO ExprBool tPF Body
+    | tWHILE tPO ExprBool tPF Body;
+
+InstructionBody: Decl | Aff
+    | tPRINTF tPO tID tPF;
+
+/* Expressions */
+
+Expr: ExprArithm | ExprBool;
+
+ExprBool: tID { lt_check_error_notdeclared(ref_symbols,$1); }
+    | ExprArithm Compare ExprArithm;
 Compare: tEQL | tLSS | tGTR | tLEQ | tGEQ;
 
-ExprArithm: tID Operator tID {
-lt_check_error_notdeclared(ref_symbols,$1);
-lt_check_error_notdeclared(ref_symbols,$3);
-};
-ExprArithm: ExprArithm Operator ExprArithm;
+ExprArithm: tID { lt_check_error_notdeclared(ref_symbols,$1); }
+    | tENTIER
+    | ExprArithm Operator ExprArithm ;
 Operator:tPLUS | tMINUS;
 
+/* Declaration instruction */
 
 Decl: tTYPE Aff  {
-lt_check_error_declared(ref_symbols,$1);
+    lt_check_error_declared(ref_symbols,$1);
 };
-Aff: tID tEQL Expr tSEMICOLON {
-
+Aff: tID tEQL Expr {
 	$$ = $1;
 };
-
-Expr: tENTIER;
 
 %%
 
