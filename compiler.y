@@ -1,8 +1,41 @@
 %{
+	#include <string.h>
+
     #define YYDEBUG 1
+
+	#define TYPE_VOID 0
+	#define TYPE_INT 1
+
+	typedef struct lt_symbol {
+		int id;
+		int type;
+		long addr;
+		char* name;
+	} lt_symbol;
+
+	#define SYMBOL_TABLE_SIZE 512
+
+	struct lt_symbol_table;
+
+	typedef struct lt_symbol_table {
+		int last_id;
+		lt_symbol array[SYMBOL_TABLE_SIZE];
+	} lt_symbol_table;
+
+
+	lt_symbol_table *ref_symbols;
 
 	int yylex(void);
 	void yyerror(char*);
+
+	void init_table(lt_symbol_table *table);
+	int add_symbol(lt_symbol_table *table, int type, long addr, char* name);
+	lt_symbol *get_symbol_by_name(lt_symbol_table *table, char* name);
+
+	/*..exceptions in rulata..*/
+	int is_in_table(lt_symbol_table *table, char* name);
+	void error_declare1(lt_symbol_table *table, char* name1, char* name2);
+	void error_declare2(lt_symbol_table *table, char* name1, char* name2);
 %}
 
 %token tPLUS
@@ -39,7 +72,7 @@
 }
 
 %type<nb> tENTIER
-%type<str> tID
+%type<str> tID Aff
 %type<str> tTYPE
 
 %%
@@ -49,57 +82,56 @@ Functions:Function Functions;
 Functions:Function;
 Function: Fdecl Body;
 
-Fdecl: tTYPE tID tPO tPF;
+Fdecl: tTYPE tID tPO tPF { 
+printf("%x\n", ref_symbols);
+error_declare2(ref_symbols,$2,$2);
+};
 
 Body: tAO Instructions tAF;
 
 Instructions: Instruction Instructions;
 Instructions: ;
 Instruction: Decl;
-Instruction: tPRINTF tPO tID tPF;
+Instruction: ExprArithm;
+Instruction: tPRINTF tPO tID tPF  {
+error_declare1(ref_symbols,$3,$3);
+};
 Instruction: tIF tPO ExprBool tPF Body tELSE Body;
 Instruction: tIF tPO ExprBool tPF Body;
 Instruction: tWHILE tPO ExprBool tPF Body;
 
-ExprBool:tID Compare tID;
-ExprBool:tENTIER Compare tENTIER;
+ExprBool:Decl Compare Decl;
+ExprBool:tID Compare tID {
+error_declare1(ref_symbols,$1,$3);
+};
+ExprBool:tENTIER Compare tENTIER /*{
+	if (!is_in_table(ref_symbols,$1)||!is_in_table(ref_symbols,$3)) {
+		printf("exception var not declared\n");
+	}
+	else if (!is_int($1)||!is_int($3))  {
+		printf("exception var not int\n");
+	}	
+}*/;
 Compare: tEQL | tLSS | tGTR | tLEQ | tGEQ;
 
-ExprArithm: tID Operator tID;
-ExprArithm: ExprArithm Operator tID;
-ExprArithm: tID Operator ExprArithm;
+ExprArithm: tID Operator tID {
+error_declare1(ref_symbols,$1,$3);
+};
 ExprArithm: ExprArithm Operator ExprArithm;
 Operator:tPLUS | tMINUS;
 
 
-Decl: tTYPE Aff;
-Aff: tID tEQL Expr tSEMICOLON;
+Decl: tTYPE Aff  {
+error_declare2(ref_symbols,$1,$1);
+};
+Aff: tID tEQL Expr tSEMICOLON {
+
+	$$ = $1;
+};
 
 Expr: tENTIER;
 
 %%
-
-#include <string.h>
-
-#define TYPE_VOID 0
-#define TYPE_INT 1
-
-typedef struct lt_symbol {
-    int id;
-    int type;
-    long addr;
-    char* name;
-} lt_symbol;
-
-#define SYMBOL_TABLE_SIZE 512
-
-struct lt_symbol_table;
-typedef struct lt_symbol_table {
-    int last_id;
-    lt_symbol array[SYMBOL_TABLE_SIZE];
-} lt_symbol_table;
-
-lt_symbol_table *ref_symbols;
 
 void init_table(lt_symbol_table *table) {
     for (int i = 0; i < SYMBOL_TABLE_SIZE; ++i) {
@@ -131,6 +163,23 @@ lt_symbol *get_symbol_by_name(lt_symbol_table *table, char* name) {
     }
     return NULL;
 }
+
+/*..exceptions in rulata..*/
+int is_in_table(lt_symbol_table *table, char* name) {
+    return get_symbol_by_name(table, name) != NULL;
+}
+
+void error_declare1(lt_symbol_table *table, char* name1, char* name2){
+	if (!is_in_table(table,name1) || !is_in_table(table,name2)) {
+		printf("exception var not declared\n");
+	}
+}
+void error_declare2(lt_symbol_table *table, char* name1, char* name2){
+	if (is_in_table(table,name1) || is_in_table(table,name2)) {
+		printf("exception var already declared\n");
+	}
+}
+
 
 int main(int argc, char** argv) {
 #if YYDEBUG
