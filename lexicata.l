@@ -1,4 +1,5 @@
 %{
+#include <string.h>
 #include "y.tab.h"
 
 void bug();
@@ -27,13 +28,13 @@ void bug();
 " "					 { /*return tSPACE; */     }
 "const"				 { return tCONST; }
 "printf"			 { return tPRINTF;      }
-("int"|"bool"|"char"|"float") { yylval.str = yytext; return tTYPE; }
+("int"|"bool"|"char"|"float") { yylval.str = strdup(yytext); return tTYPE; }
 "if"				 { return tIF; }
 "else"				 { return tELSE; }
 "while"				 { return tWHILE; }
 [\-\+]?[0-9]+e[0-9]+ { yylval.nb = atoi(yytext); return tENTIER; }
 [\-\+]?[0-9]+ 		 { yylval.nb = atoi(yytext); return tENTIER; }
-[a-zA-Z][a-zA-Z0-9_]* { yylval.str = yytext; return tID; }
+[a-zA-Z][a-zA-Z0-9_]* { yylval.str = strdup(yytext); return tID; }
 . 					 { bug();      }
 
 
