@@ -28,14 +28,14 @@
 	int yylex(void);
 	void yyerror(char*);
 
-	void init_table(lt_symbol_table *table);
-	int add_symbol(lt_symbol_table *table, int type, long addr, char* name);
-	lt_symbol *get_symbol_by_name(lt_symbol_table *table, char* name);
+	void lt_init_table(lt_symbol_table *table);
+	int lt_add_symbol(lt_symbol_table *table, int type, long addr, char* name);
+	lt_symbol *lt_get_symbol_by_name(lt_symbol_table *table, char* name);
 
 	/*..exceptions in rulata..*/
-	int is_in_table(lt_symbol_table *table, char* name);
-	void error_declare1(lt_symbol_table *table, char* name);
-	void error_declare2(lt_symbol_table *table, char* name);
+	int lt_is_in_table(lt_symbol_table *table, char* name);
+	void lt_check_error_notdeclared(lt_symbol_table *table, char* name);
+	void lt_check_error_declared(lt_symbol_table *table, char* name);
 %}
 
 %token tPLUS
@@ -83,8 +83,7 @@ Functions:Function;
 Function: Fdecl Body;
 
 Fdecl: tTYPE tID tPO tPF { 
-printf("%x\n", ref_symbols);
-error_declare2(ref_symbols,$2);
+lt_check_error_declared(ref_symbols,$2);
 };
 
 Body: tAO Instructions tAF;
@@ -94,16 +93,16 @@ Instructions: ;
 Instruction: Decl;
 Instruction: ExprArithm;
 Instruction: tPRINTF tPO tID tPF  {
-error_declare1(ref_symbols,$3);
+lt_check_error_notdeclared(ref_symbols,$3);
 };
 Instruction: tIF tPO ExprBool tPF Body tELSE Body;
 Instruction: tIF tPO ExprBool tPF Body;
 Instruction: tWHILE tPO ExprBool tPF Body;
 
-ExprBool:Decl Compare Decl;
+ExprBool:ExprArithm Compare ExprArithm;
 ExprBool:tID Compare tID {
-error_declare1(ref_symbols,$1);
-error_declare1(ref_symbols,$3);
+lt_check_error_notdeclared(ref_symbols,$1);
+lt_check_error_notdeclared(ref_symbols,$3);
 };
 ExprBool:tENTIER Compare tENTIER /*{
 	if (!is_in_table(ref_symbols,$1)||!is_in_table(ref_symbols,$3)) {
@@ -116,15 +115,15 @@ ExprBool:tENTIER Compare tENTIER /*{
 Compare: tEQL | tLSS | tGTR | tLEQ | tGEQ;
 
 ExprArithm: tID Operator tID {
-error_declare1(ref_symbols,$1);
-error_declare1(ref_symbols,$3);
+lt_check_error_notdeclared(ref_symbols,$1);
+lt_check_error_notdeclared(ref_symbols,$3);
 };
 ExprArithm: ExprArithm Operator ExprArithm;
 Operator:tPLUS | tMINUS;
 
 
 Decl: tTYPE Aff  {
-error_declare2(ref_symbols,$1);
+lt_check_error_declared(ref_symbols,$1);
 };
 Aff: tID tEQL Expr tSEMICOLON {
 
@@ -135,13 +134,13 @@ Expr: tENTIER;
 
 %%
 
-void init_table(lt_symbol_table *table) {
+void lt_init_table(lt_symbol_table *table) {
     for (int i = 0; i < SYMBOL_TABLE_SIZE; ++i) {
         table->array[i].id = -1;
     }
 }
 
-int add_symbol(lt_symbol_table *table, int type, long addr, char* name) {
+int lt_add_symbol(lt_symbol_table *table, int type, long addr, char* name) {
     // find id for the new symbol
     int new_id = table->last_id;
 
@@ -157,7 +156,7 @@ int add_symbol(lt_symbol_table *table, int type, long addr, char* name) {
     return 0;
 }
 
-lt_symbol *get_symbol_by_name(lt_symbol_table *table, char* name) {
+lt_symbol *lt_get_symbol_by_name(lt_symbol_table *table, char* name) {
     for (int i = 0 ; i < SYMBOL_TABLE_SIZE ; ++i) {
         lt_symbol *symbol = &table->array[i];
 
@@ -169,17 +168,17 @@ lt_symbol *get_symbol_by_name(lt_symbol_table *table, char* name) {
 }
 
 /*..exceptions in rulata..*/
-int is_in_table(lt_symbol_table *table, char* name) {
-    return get_symbol_by_name(table, name) != NULL;
+int lt_is_in_table(lt_symbol_table *table, char* name) {
+    return lt_get_symbol_by_name(table, name) != NULL;
 }
 
-void error_declare1(lt_symbol_table *table, char* name){
-	if (!is_in_table(table,name)) {
+void lt_check_error_notdeclared(lt_symbol_table *table, char* name){
+	if (!lt_is_in_table(table,name)) {
 		printf("exception var not declared\n");
 	}
 }
-void error_declare2(lt_symbol_table *table, char* name){
-	if (is_in_table(table,name)) {
+void lt_check_error_declared(lt_symbol_table *table, char* name){
+	if (lt_is_in_table(table,name)) {
 		printf("exception var already declared\n");
 	}
 }
@@ -198,7 +197,7 @@ int main(int argc, char** argv) {
 
     // Init symbol table
     lt_symbol_table symbols;
-    init_table(&symbols);
+    lt_init_table(&symbols);
     ref_symbols = &symbols;
 
     // Parse
