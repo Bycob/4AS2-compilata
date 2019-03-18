@@ -10,3 +10,6 @@ lex.yy.c: lexicata.l
 	
 test: compiler
 	./compiler < test.c
+
+testd: compiler
+	./compiler -d < test.c

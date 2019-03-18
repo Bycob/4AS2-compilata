@@ -1,6 +1,6 @@
 %{
-    #define YYDEBUG 0
-    
+    #define YYDEBUG 1
+
 	int yylex(void);
 	void yyerror(char*);
 %}
@@ -78,9 +78,16 @@ Expr: tENTIER;
 
 %%
 
-int main(void) {
+
+int main(int argc, char** argv) {
 #if YYDEBUG
-    yydebug = 1;
+    yydebug = 0;
+
+    for (int i = 1; i < argc; ++i) {
+        if (strcmp(argv[i], "-d") == 0) {
+            yydebug = 1;
+        }
+    }
 #endif
     yyparse();
 }
