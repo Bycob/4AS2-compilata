@@ -27,7 +27,7 @@ void bug();
 " "					 { /*return tSPACE; */     }
 "const"				 { return tCONST; }
 "printf"			 { return tPRINTF;      }
-("int"|"bool"|"char"|"float") { return tTYPE; }
+("int"|"bool"|"char"|"float") { yylval.str = yytext; return tTYPE; }
 "if"				 { return tIF; }
 "else"				 { return tELSE; }
 "while"				 { return tWHILE; }
