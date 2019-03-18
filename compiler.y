@@ -157,7 +157,9 @@ int add_symbol(lt_symbol_table *table, int type, long addr, char* name) {
 
 lt_symbol *get_symbol_by_name(lt_symbol_table *table, char* name) {
     for (int i = 0 ; i < SYMBOL_TABLE_SIZE ; ++i) {
-        if (strcmp(table->array[i].name, name) == 0) {
+        lt_symbol *symbol = &table->array[i];
+
+        if (symbol->id != -1 && strcmp(symbol->name, name) == 0) {
             return &table->array[i];
         }
     }
