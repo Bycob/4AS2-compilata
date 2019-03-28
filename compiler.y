@@ -12,7 +12,7 @@
 
 	int lt_identify_type(char * type);
 
-	/*..exceptions in rulata..*/
+	/* exceptions in rulata */
 	void lt_check_error_notdeclared(lt_symbol_table *table, char* name);
 	void lt_check_error_declared(lt_symbol_table *table, char* name, char* type);
 %}
@@ -120,6 +120,7 @@ int lt_identify_type(char * type){
 	}
 }
 
+/* exceptions in rulata */
 void lt_check_error_notdeclared(lt_symbol_table *table, char* name){
 	if (!lt_is_in_table(table,name)) {
 		printf("exception var not declared\n");
