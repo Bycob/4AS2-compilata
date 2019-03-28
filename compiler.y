@@ -1,5 +1,6 @@
 %{
 	#include <string.h>
+	#include <stdio.h>
 
 	#include "lt_symbols.h"
 

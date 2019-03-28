@@ -2,6 +2,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 
 void lt_init_table(lt_symbol_table *table) {
@@ -22,7 +23,7 @@ int lt_add_symbol(lt_symbol_table *table, int type, long addr, char* name) {
 
     // add symbol
     table->array[new_id] = (lt_symbol) {
-        new_id, type, addr, name
+        new_id, type, addr, strdup(name)
     };
     table->last_id = new_id + 1;
     return 0;
@@ -39,7 +40,7 @@ lt_symbol *lt_get_symbol_by_name(lt_symbol_table *table, char* name) {
 
     // if symbol was not found in current scope, look up in parent scope
     if (table->parent_scope != NULL) {
-        return lt_get_symbol_by_name(table, name);
+        return lt_get_symbol_by_name(table->parent_scope, name);
     }
 
     return NULL;
@@ -51,6 +52,7 @@ int lt_is_in_table(lt_symbol_table *table, char* name) {
 
 void lt_open_scope(lt_symbol_table **table) {
     lt_symbol_table *new_scope = malloc(sizeof(lt_symbol_table));
+    lt_init_table(new_scope);
     new_scope->parent_scope = (*table);
     *table = new_scope;
 }
