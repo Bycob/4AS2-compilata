@@ -107,9 +107,7 @@ Decl: tTYPE tID {
 	lt_check_error_declared(ref_symbols,$2, $1);
 };
 
-DeclAff: Decl tEQL Expr {
-
-};
+DeclAff: Decl tEQL Expr ;
 
 Aff: tID tEQL Expr {
 	lt_check_error_notdeclared(ref_symbols,$1);

@@ -1,6 +1,7 @@
 #include "lt_symbols.h"
 
 #include <string.h>
+#include <stdlib.h>
 
 
 void lt_init_table(lt_symbol_table *table) {
