@@ -59,7 +59,15 @@ start:Functions;
 
 /* General */
 
-Body: tAO Instructions tAF;
+Body: 
+	tAO 
+	{
+		lt_open_scope(&ref_symbols);
+	} 
+	Instructions tAF 
+	{
+		lt_close_scope(&ref_symbols);
+	};
 
 /* Fonctions */
 
@@ -76,7 +84,7 @@ Instruction: InstructionBody tSEMICOLON
     | tIF tPO ExprBool tPF Body
     | tWHILE tPO ExprBool tPF Body;
 
-InstructionBody: Decl | ReallocationVar
+InstructionBody: Decl | DeclAff | Aff
     | tPRINTF tPO tID tPF;
 
 /* Expressions */
@@ -95,14 +103,15 @@ Operator:tPLUS | tMINUS;
 
 /* Declaration instruction */
 
-Decl: tTYPE Aff  {
+Decl: tTYPE tID {
 	lt_check_error_declared(ref_symbols,$2, $1);
 };
-Aff: tID tEQL Expr {
-	$$ = $1;
+
+DeclAff: Decl tEQL Expr {
+
 };
 
-ReallocationVar: Aff  {
+Aff: tID tEQL Expr {
 	lt_check_error_notdeclared(ref_symbols,$1);
 };
 
