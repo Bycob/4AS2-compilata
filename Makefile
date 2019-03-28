@@ -7,7 +7,7 @@ y.tab.c: compiler.y
 
 lex.yy.c: lexicata.l
 	flex lexicata.l
-
+	
 test: compiler
 	./compiler < test.c
 

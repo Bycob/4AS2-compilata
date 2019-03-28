@@ -31,11 +31,12 @@
 	void lt_init_table(lt_symbol_table *table);
 	int lt_add_symbol(lt_symbol_table *table, int type, long addr, char* name);
 	lt_symbol *lt_get_symbol_by_name(lt_symbol_table *table, char* name);
+	int lt_identify_type(char * type);
 
 	/*..exceptions in rulata..*/
 	int lt_is_in_table(lt_symbol_table *table, char* name);
 	void lt_check_error_notdeclared(lt_symbol_table *table, char* name);
-	void lt_check_error_declared(lt_symbol_table *table, char* name);
+	void lt_check_error_declared(lt_symbol_table *table, char* name, char* type);
 %}
 
 %token tPLUS
@@ -86,10 +87,9 @@ Body: tAO Instructions tAF;
 
 Functions:Function Functions | Function;
 Function: Fdecl Body;
-
 Fdecl: tTYPE tID tPO tPF {
     printf("%p\n", ref_symbols);
-    lt_check_error_declared(ref_symbols,$2);
+    lt_check_error_declared(ref_symbols,$2, $1);
 };
 
 Instructions: Instruction Instructions | ;
@@ -97,8 +97,8 @@ Instruction: InstructionBody tSEMICOLON
     | tIF tPO ExprBool tPF Body tELSE Body
     | tIF tPO ExprBool tPF Body
     | tWHILE tPO ExprBool tPF Body;
-
-InstructionBody: Decl | Aff
+InstructionBody: ReallocationVar;
+InstructionBody: Decl | ReallocationVar
     | tPRINTF tPO tID tPF;
 
 /* Expressions */
@@ -107,6 +107,7 @@ Expr: ExprArithm | ExprBool;
 
 ExprBool: tID { lt_check_error_notdeclared(ref_symbols,$1); }
     | ExprArithm Compare ExprArithm;
+
 Compare: tEQL | tLSS | tGTR | tLEQ | tGEQ;
 
 ExprArithm: tID { lt_check_error_notdeclared(ref_symbols,$1); }
@@ -117,12 +118,18 @@ Operator:tPLUS | tMINUS;
 /* Declaration instruction */
 
 Decl: tTYPE Aff  {
-    lt_check_error_declared(ref_symbols,$1);
+lt_check_error_declared(ref_symbols,$2, $1);
 };
 Aff: tID tEQL Expr {
 	$$ = $1;
 };
 
+ReallocationVar: Aff  {
+lt_check_error_notdeclared(ref_symbols,$1);
+};
+
+
+Expr: tENTIER;
 %%
 
 void lt_init_table(lt_symbol_table *table) {
@@ -158,7 +165,17 @@ lt_symbol *lt_get_symbol_by_name(lt_symbol_table *table, char* name) {
     return NULL;
 }
 
-/*..exceptions in rulata..*/
+int lt_identify_type(char * type){
+	
+	if (!strcmp(type,"void")){
+		return TYPE_VOID;
+	}
+	if (!strcmp(type,"int")){
+		return TYPE_INT;
+	}
+}
+
+	// exceptions in rulata
 int lt_is_in_table(lt_symbol_table *table, char* name) {
     return lt_get_symbol_by_name(table, name) != NULL;
 }
@@ -168,9 +185,12 @@ void lt_check_error_notdeclared(lt_symbol_table *table, char* name){
 		printf("exception var not declared\n");
 	}
 }
-void lt_check_error_declared(lt_symbol_table *table, char* name){
+void lt_check_error_declared(lt_symbol_table *table, char* name, char* type){
 	if (lt_is_in_table(table,name)) {
 		printf("exception var already declared\n");
+	}
+	else {
+		lt_add_symbol(table,lt_identify_type(type), (long)(&name), name);
 	}
 }
 
