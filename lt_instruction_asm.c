@@ -1,42 +1,37 @@
 #include "lt_instruction_asm.h"
-
 #include <string.h>
 
 
-void lt_init_table(lt_symbol_table *table) {
+int lt_asm_identify_type(char * type){
+
+	if (!strcmp(type,"void")){
+		return 0;
+	}
+	if (!strcmp(type,"int")){
+		return sizeof(int);
+	}
+}
+
+void lt_init_asm_table(lt_asm_symbol_table *table) {
+
     for (int i = 0; i < SYMBOL_TABLE_SIZE; ++i) {
-        table->array[i].id = -1;
+        table->array[i].r1 = -1;	
+		table->array[i].r2 = -1;
+		table->array[i].r3 = -1;
+		table->array[i].instru = "NOP";
     }
 }
 
-int lt_add_symbol(lt_symbol_table *table, int type, long addr, char* name) {
-    // find id for the new symbol
+void lt_add_asm_table(lt_asm_symbol_table *table, char* instru, int r1, int r2, int r3){
+	// find id for the new symbol
     int new_id = table->last_id;
 
     if (new_id > SYMBOL_TABLE_SIZE) {
         return -1;
     }
-
-    // add symbol
-    table->array[new_id] = (lt_symbol) {
-        new_id, type, addr, name
-    };
+	// add symbol
+    table->array[new_id] = (lt_instru_asm) { instru, r1, r2, r3	};
     table->last_id = new_id + 1;
     return 0;
-}
+};
 
-lt_symbol *lt_get_symbol_by_name(lt_symbol_table *table, char* name) {
-    for (int i = 0 ; i < SYMBOL_TABLE_SIZE ; ++i) {
-        lt_symbol *symbol = &table->array[i];
-
-        if (symbol->id != -1 && strcmp(symbol->name, name) == 0) {
-            return &table->array[i];
-        }
-    }
-    return NULL;
-}
-
-// exceptions in rulata
-int lt_is_in_table(lt_symbol_table *table, char* name) {
-    return lt_get_symbol_by_name(table, name) != NULL;
-}

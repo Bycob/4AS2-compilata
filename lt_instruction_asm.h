@@ -1,23 +1,37 @@
 
+#define INSTR_ADD 0x01
+#define INSTR_MUL 0x02
+#define INSTR_SOU 0x03
+#define INSTR_DIV 0x04
+#define INSTR_COP 0x05
+#define INSTR_AFC 0x06
+#define INSTR_LOAD 0x07
+#define INSTR_STORE 0x08
+#define INSTR_EQU 0x09
+#define INSTR_INF 0xA
+#define INSTR_INFE 0xB
+#define INSTR_SUP 0xC
+#define INSTR_SUPE 0xD
+#define INSTR_JMP 0xE
+#define INSTR_JMPC 0xF
+
 #define SYMBOL_TABLE_SIZE 512
-#define TYPE_VOID 0
-#define TYPE_INT 1
 
 
 typedef struct lt_instru_asm {
 	char* instru;
-	long r1;
-	long r2;
-	long r3;
-} lt_symbol;
+	int r1;
+	int r2;
+	int r3;
+} lt_instru_asm;
 
-char * lt_asm_table;
+typedef struct lt_asm_symbol_table {
+	int last_id;
+	lt_instru_asm array[SYMBOL_TABLE_SIZE];
+} lt_asm_symbol_table;
+
+void lt_init_asm_table(lt_asm_symbol_table *table);
+
+void lt_add_asm_table(lt_asm_symbol_table *table, char* instru, int r1, int r2, int r3);
 
 
-void lt_init_table(lt_symbol_table *table);
-
-int lt_add_symbol(lt_symbol_table *table, int type, long addr, char* name);
-
-lt_symbol *lt_get_symbol_by_name(lt_symbol_table *table, char* name);
-
-int lt_is_in_table(lt_symbol_table *table, char* name);
