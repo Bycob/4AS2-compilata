@@ -1,17 +1,6 @@
 #include "lt_instruction_asm.h"
 #include <string.h>
 
-
-int lt_asm_identify_type(char * type){
-
-	if (!strcmp(type,"void")){
-		return 0;
-	}
-	if (!strcmp(type,"int")){
-		return sizeof(int);
-	}
-}
-
 void lt_init_asm_table(lt_asm_symbol_table *table) {
 
     for (int i = 0; i < SYMBOL_TABLE_SIZE; ++i) {
