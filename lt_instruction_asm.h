@@ -15,7 +15,12 @@
 #define INSTR_JMP 0xE
 #define INSTR_JMPC 0xF
 
-#define SYMBOL_TABLE_SIZE 512
+#define ASM_TABLE_SIZE 0xFFFFF
+#define RA 1
+#define RB 2
+#define RC 3
+#define NOARG -1
+
 
 
 typedef struct lt_instru_asm {
@@ -25,13 +30,13 @@ typedef struct lt_instru_asm {
 	int r3;
 } lt_instru_asm;
 
-typedef struct lt_asm_symbol_table {
+typedef struct lt_asm_table {
 	int last_id;
-	lt_instru_asm array[SYMBOL_TABLE_SIZE];
-} lt_asm_symbol_table;
+	lt_instru_asm array[ASM_TABLE_SIZE];
+} lt_asm_table;
 
-void lt_init_asm_table(lt_asm_symbol_table *table);
+void lt_init_asm_table(lt_asm_table *table);
 
-void lt_add_asm_table(lt_asm_symbol_table *table, char* instru, int r1, int r2, int r3);
+void lt_add_asm_table(lt_asm_table *table, char* instru, int r1, int r2, int r3);
 
 
