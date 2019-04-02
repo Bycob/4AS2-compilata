@@ -2,3 +2,7 @@ lex.yy.c
 y.tab.c
 y.tab.h
 compiler
+*.o
+
+# tests
+test_symbols
