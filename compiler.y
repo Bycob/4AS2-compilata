@@ -56,6 +56,7 @@
 %type<nb> tENTIER
 %type<str> tID Aff
 %type<str> tTYPE
+%type<nb> Expr
 
 %%
 start:Functions;
@@ -92,10 +93,9 @@ InstructionBody: Decl | DeclAff | Aff
 
 /* Expressions */
 
-Expr: ExprArithm | ExprBool;
+Expr: ExprBool | ExprArithm;
 
-ExprBool: tID { lt_check_error_notdeclared(ref_symbols,$1); }
-    | ExprArithm Compare ExprArithm;
+ExprBool: ExprArithm Compare ExprArithm;
 
 Compare: tEQL | tLSS | tGTR | tLEQ | tGEQ;
 
@@ -142,7 +142,7 @@ Aff: tID tEQL Expr {
 };
 
 
-Expr: tENTIER;
+//Expr: tENTIER;
 %%
 
 int lt_identify_type(char * type){
@@ -153,6 +153,8 @@ int lt_identify_type(char * type){
 	if (!strcmp(type,"int")){
 		return TYPE_INT;
 	}
+	else
+		return -1;
 }
 
 /* exceptions in rulata */
@@ -190,7 +192,7 @@ int main(int argc, char** argv) {
 
     // Init asm_instru table
 	lt_asm_table asm_istru;
-    lt_init_table(&asm_istru);
+    lt_init_asm_table(&asm_istru);
     ref_asm = &asm_istru;
 
     // Parse

@@ -23,3 +23,6 @@ test_symbols: libtest.o tests/test_symbols.c lt_symbols.c
 
 libtest.o: tests/libtest.c
 	gcc -c tests/libtest.c
+
+clean:
+	rm lex.yy.c y.tab.c y.tab.h
