@@ -13,6 +13,8 @@ int lt_sizeof(int type) {
 
 void lt_init_table(lt_symbol_table *table) {
     table->parent_scope = NULL;
+    table->last_id = 0;
+    table->id_offset = 0;
 
     for (int i = 0; i < SYMBOL_TABLE_SIZE; ++i) {
         table->array[i].id = -1;
