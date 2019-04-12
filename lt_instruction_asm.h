@@ -37,6 +37,6 @@ typedef struct lt_asm_table {
 
 void lt_init_asm_table(lt_asm_table *table);
 
-void lt_add_asm_table(lt_asm_table *table, char* instru, int r1, int r2, int r3);
+int lt_add_asm_table(lt_asm_table *table, char* instru, int r1, int r2, int r3);
 
 

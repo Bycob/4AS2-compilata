@@ -3,10 +3,12 @@
 	#include <stdio.h>
 
 	#include "lt_symbols.h"
+	#include "lt_instruction_asm.h"
 
     #define YYDEBUG 1
 
 	lt_symbol_table *ref_symbols;
+	lt_asm_table *ref_asm;
 
 	int yylex(void);
 	void yyerror(char*);
@@ -98,9 +100,25 @@ ExprBool: tID { lt_check_error_notdeclared(ref_symbols,$1); }
 Compare: tEQL | tLSS | tGTR | tLEQ | tGEQ;
 
 ExprArithm: tID { lt_check_error_notdeclared(ref_symbols,$1); }
-    | tENTIER
-    | ExprArithm Operator ExprArithm ;
-Operator:tPLUS | tMINUS;
+    | tENTIER{
+		lt_add_symbol(ref_symbols,TYPE_INT, "");
+		lt_add_asm_table(ref_asm, "AFC", RA, $1, NOARG);
+		lt_add_asm_table(ref_asm, "STORE", lt_get_last(ref_symbols)->addr, RA, NOARG);
+		
+}
+    | ExprArithm tPLUS ExprArithm {
+		lt_add_asm_table(ref_asm, "LOAD", RA, lt_pop(ref_symbols).addr, NOARG);
+		lt_add_asm_table(ref_asm, "LOAD", RB, lt_get_last(ref_symbols)->addr, NOARG);
+		lt_add_asm_table(ref_asm, "ADD", RA, RA, RB);
+		lt_add_asm_table(ref_asm, "STORE", lt_get_last(ref_symbols)->addr, RA, NOARG);
+}
+	| ExprArithm tMINUS ExprArithm {
+		lt_add_asm_table(ref_asm, "LOAD", RA, lt_pop(ref_symbols).addr, NOARG);
+		lt_add_asm_table(ref_asm, "LOAD", RB, lt_get_last(ref_symbols)->addr, NOARG);
+		lt_add_asm_table(ref_asm, "SOU", RA, RA, RB);
+		lt_add_asm_table(ref_asm, "STORE", lt_get_last(ref_symbols)->addr, RA, NOARG);
+};
+
 
 /* Declaration instruction */
 
@@ -108,10 +126,19 @@ Decl: tTYPE tID {
 	lt_check_error_declared(ref_symbols,$2, $1);
 };
 
-DeclAff: Decl tEQL Expr ;
+DeclAff: Decl tEQL Expr {
+	lt_add_asm_table(ref_asm, "LOAD", RA, lt_pop(ref_symbols).addr, NOARG);
+	lt_add_asm_table(ref_asm, "LOAD", RB, lt_get_last(ref_symbols)->addr, NOARG);
+	lt_add_asm_table(ref_asm, "AFC", RA, $3, NOARG);
+	lt_add_asm_table(ref_asm, "STORE", RB, RA, NOARG);
+};
 
 Aff: tID tEQL Expr {
 	lt_check_error_notdeclared(ref_symbols,$1);
+	lt_add_asm_table(ref_asm, "LOAD", RA, lt_pop(ref_symbols).addr, NOARG);
+	lt_add_asm_table(ref_asm, "LOAD", RB, lt_get_last(ref_symbols)->addr, NOARG);
+	lt_add_asm_table(ref_asm, "AFC", RA, $3, NOARG);
+	lt_add_asm_table(ref_asm, "STORE", RB, RA, NOARG);
 };
 
 
@@ -140,7 +167,7 @@ void lt_check_error_declared(lt_symbol_table *table, char* name, char* type){
 		printf("exception var already declared\n");
 	}
 	else {
-		lt_add_symbol(table,lt_identify_type(type), (long)(&name), name);
+		lt_add_symbol(table,lt_identify_type(type), name);
 	}
 }
 
@@ -160,6 +187,11 @@ int main(int argc, char** argv) {
     lt_symbol_table symbols;
     lt_init_table(&symbols);
     ref_symbols = &symbols;
+
+    // Init asm_instru table
+	lt_asm_table asm_istru;
+    lt_init_table(&asm_istru);
+    ref_asm = &asm_istru;
 
     // Parse
     yyparse();
