@@ -19,7 +19,7 @@ unittest: test_symbols
 	./test_symbols
 
 test_symbols: libtest.o tests/test_symbols.c lt_symbols.c
-	gcc -I"." lt_symbols.c libtest.o tests/test_symbols.c -o test_symbols
+	gcc -I"." lt_symbols.c libtest.o tests/test_symbols.c -g -Og -o test_symbols
 
 libtest.o: tests/libtest.c
 	gcc -c tests/libtest.c

@@ -51,7 +51,7 @@ void end_test_session() {
     }
 
     if (total == passed) {
-        printf("%sAll tests passed ! (%d/%d)%s\n", GREEN, passed, total, END);
+        printf("%sAll tests passed! (%d/%d)%s\n", GREEN, passed, total, END);
     }
     else {
         printf("%sSome of the tests failed... (%d/%d)%s\n", RED, passed, total, END);
