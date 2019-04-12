@@ -191,10 +191,11 @@ int main(int argc, char** argv) {
     ref_symbols = &symbols;
 
     // Init asm_instru table
-	lt_asm_table asm_istru;
-    lt_init_asm_table(&asm_istru);
-    ref_asm = &asm_istru;
+	ref_asm = malloc(sizeof(lt_asm_table));
+	lt_init_asm_table(ref_asm);
 
     // Parse
     yyparse();
+
+	free(ref_asm);
 }
