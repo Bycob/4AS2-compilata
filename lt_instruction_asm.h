@@ -22,7 +22,6 @@
 #define NOARG -1
 
 
-
 typedef struct lt_instru_asm {
 	char* instru;
 	int r1;
@@ -39,4 +38,4 @@ void lt_init_asm_table(lt_asm_table *table);
 
 int lt_add_asm_table(lt_asm_table *table, char* instru, int r1, int r2, int r3);
 
-
+void lt_write_asm(lt_asm_table *table, char* filename);

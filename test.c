@@ -1,12 +1,6 @@
 int main() {
-    int bidule = 5;
-	int age =2;
-	int dix =4;
-	if (age >= dix){
-  		int zou = 2;
-	}
-	else {
-	zou = 3;
-    int age = 2;	
-	}
+    int a = 42;
+    int b = 51;
+    int d = a + b;
+    d = a + d;
 }
