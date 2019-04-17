@@ -9,6 +9,7 @@
 
 	lt_symbol_table *ref_symbols;
 	lt_asm_table *ref_asm;
+	lt_jmpc_table *ref_jmpc;
 
 	int yylex(void);
 	void yyerror(char*);
@@ -53,10 +54,11 @@
     char* str;
 }
 
+%type<nb> Body
 %type<nb> tENTIER
 %type<str> tID Aff
 %type<str> tTYPE
-%type<nb> Expr
+//%type<nb> Expr
 
 %%
 start:Functions;
@@ -71,6 +73,7 @@ Body:
 	Instructions tAF
 	{
 		lt_close_scope(&ref_symbols);
+		$$ = lt_get_last_asm_id(ref_asm);
 	};
 
 /* Fonctions */
@@ -83,8 +86,15 @@ Fdecl: tTYPE tID tPO tPF {
 
 Instructions: Instruction Instructions | ;
 Instruction: InstructionBody tSEMICOLON
-    | tIF tPO ExprBool tPF Body tELSE Body
-    | tIF tPO ExprBool tPF Body
+    | tIF tPO ExprBool tPF Body tELSE Body 
+    | tIF tPO ExprBool tPF {
+	lt_add_asm_table(ref_asm, "LOAD", RA, lt_get_last(ref_symbols)->addr, NOARG);
+	lt_add_asm_table(ref_asm, "JMPC", -1, RA, NOARG);
+	lt_add_jmpc_table(ref_jmpc, lt_get_last_asm_id(ref_asm));
+}
+	Body {
+		ref_asm->array[lt_get_last_jmpc_id(ref_jmpc)].r2 = $6;
+}
     | tWHILE tPO ExprBool tPF Body;
 
 InstructionBody: Decl | DeclAff | Aff
@@ -140,6 +150,10 @@ Aff: tID tEQL Expr {
 	lt_add_asm_table(ref_asm, "STORE", addr, RA, NOARG);
 };
 
+/*LoopWhile: tWHILE ExprBool tAO Instructions tAF {
+
+};*/
+
 
 //Expr: tENTIER;
 %%
@@ -188,6 +202,10 @@ int main(int argc, char** argv) {
     // Init asm_instru table
 	ref_asm = malloc(sizeof(lt_asm_table));
 	lt_init_asm_table(ref_asm);
+
+    // Init jmpc table
+	ref_jmpc = malloc(sizeof(lt_jmpc_table));
+	lt_init_jmpc_table(ref_jmpc);
 
     // Parse
     yyparse();
