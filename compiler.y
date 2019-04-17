@@ -86,7 +86,7 @@ Fdecl: tTYPE tID tPO tPF {
 
 Instructions: Instruction Instructions | ;
 Instruction: InstructionBody tSEMICOLON
-    | tIF tPO ExprBool tPF Body tELSE Body 
+    | tIF tPO ExprBool tPF Body tELSE Body
     | tIF tPO ExprBool tPF {
 	lt_add_asm_table(ref_asm, "LOAD", RA, lt_get_last(ref_symbols)->addr, NOARG);
 	lt_add_asm_table(ref_asm, "JMPC", -1, RA, NOARG);
@@ -108,28 +108,33 @@ ExprBool: ExprArithm Compare ExprArithm;
 
 Compare: tEQL | tLSS | tGTR | tLEQ | tGEQ;
 
-ExprArithm: tID {
+ExprArithm: tID
+	{
 		lt_check_error_notdeclared(ref_symbols,$1);
 		lt_add_symbol(ref_symbols,TYPE_INT, "");
 		lt_add_asm_table(ref_asm, "LOAD", RA, lt_get_symbol_by_name(ref_symbols, $1)->addr, NOARG);
-		lt_add_asm_table(ref_asm, "STORE", lt_get_last(ref_symbols)->addr, RA, NOARG); }
-    | tENTIER{
+		lt_add_asm_table(ref_asm, "STORE", lt_get_last(ref_symbols)->addr, RA, NOARG);
+	}
+    | tENTIER
+	{
 		lt_add_symbol(ref_symbols,TYPE_INT, "");
 		lt_add_asm_table(ref_asm, "AFC", RA, $1, NOARG);
 		lt_add_asm_table(ref_asm, "STORE", lt_get_last(ref_symbols)->addr, RA, NOARG);
-}
-    | ExprArithm tPLUS ExprArithm {
+	}
+    | ExprArithm tPLUS ExprArithm
+	{
 		lt_add_asm_table(ref_asm, "LOAD", RA, lt_pop(ref_symbols).addr, NOARG);
 		lt_add_asm_table(ref_asm, "LOAD", RB, lt_get_last(ref_symbols)->addr, NOARG);
 		lt_add_asm_table(ref_asm, "ADD", RA, RA, RB);
 		lt_add_asm_table(ref_asm, "STORE", lt_get_last(ref_symbols)->addr, RA, NOARG);
-}
-	| ExprArithm tMINUS ExprArithm {
+	}
+	| ExprArithm tMINUS ExprArithm
+	{
 		lt_add_asm_table(ref_asm, "LOAD", RA, lt_pop(ref_symbols).addr, NOARG);
 		lt_add_asm_table(ref_asm, "LOAD", RB, lt_get_last(ref_symbols)->addr, NOARG);
 		lt_add_asm_table(ref_asm, "SOU", RA, RA, RB);
 		lt_add_asm_table(ref_asm, "STORE", lt_get_last(ref_symbols)->addr, RA, NOARG);
-};
+	};
 
 
 /* Declaration instruction */

@@ -4,6 +4,9 @@ y.tab.h
 compiler
 *.o
 
+# python
+__pycache__/
+
 # tests
 test_symbols
 
