@@ -34,22 +34,9 @@ typedef struct lt_asm_table {
 	lt_instru_asm array[ASM_TABLE_SIZE];
 } lt_asm_table;
 
-/*table contenant les instru asm JMPC à compléter*/
-typedef struct lt_jmpc_table {
-	int last_id;
-	int array[ASM_TABLE_SIZE];
-} lt_jmpc_table;
-
-
 void lt_init_asm_table(lt_asm_table *table);
 
 int lt_add_asm_table(lt_asm_table *table, char* instru, int r1, int r2, int r3);
-
-void lt_init_jmpc_table(lt_jmpc_table *table);
-
-int lt_add_jmpc_table(lt_jmpc_table *table, int addr);
-
-int lt_get_last_jmpc_id(lt_jmpc_table *table);
 
 int lt_get_last_asm_id(lt_asm_table *table);
 

@@ -4,6 +4,7 @@
 
 	#include "lt_symbols.h"
 	#include "lt_instruction_asm.h"
+	#include "lt_jmpc.h"
 
     #define YYDEBUG 1
 
@@ -32,6 +33,7 @@
 %token tAF
 %token tCOMMA
 %token tPERIOD
+%token tAFF
 %token tEQL
 %token tLSS
 %token tGTR
@@ -73,7 +75,7 @@ Body:
 	Instructions tAF
 	{
 		lt_close_scope(&ref_symbols);
-		$$ = lt_get_last_asm_id(ref_asm);
+		$$ = lt_get_last_asm_id(ref_asm) + 1;
 	};
 
 /* Fonctions */
@@ -81,24 +83,28 @@ Body:
 Functions:Function Functions | Function;
 Function: Fdecl Body;
 Fdecl: tTYPE tID tPO tPF {
-    printf("%p\n", ref_symbols);
+    // printf("%p\n", ref_symbols);
 };
 
 Instructions: Instruction Instructions | ;
 Instruction: InstructionBody tSEMICOLON
-    | tIF tPO ExprBool tPF Body tELSE Body
-    | tIF tPO ExprBool tPF {
-	lt_add_asm_table(ref_asm, "LOAD", RA, lt_get_last(ref_symbols)->addr, NOARG);
-	lt_add_asm_table(ref_asm, "JMPC", -1, RA, NOARG);
-	lt_add_jmpc_table(ref_jmpc, lt_get_last_asm_id(ref_asm));
-}
-	Body {
-		ref_asm->array[lt_get_last_jmpc_id(ref_jmpc)].r2 = $6;
-}
+    | IfBlock
+	| IfBlock ElseBlock
     | tWHILE tPO ExprBool tPF Body;
 
 InstructionBody: Decl | DeclAff | Aff
     | tPRINTF tPO tID tPF;
+
+IfBlock: tIF tPO ExprBool tPF {
+		lt_add_asm_table(ref_asm, "LOAD", RA, lt_get_last(ref_symbols)->addr, NOARG);
+		lt_add_asm_table(ref_asm, "JMPC", -1, RA, NOARG);
+		lt_add_jmpc_table(ref_jmpc, lt_get_last_asm_id(ref_asm));
+	}
+	Body {
+		ref_asm->array[lt_pop_last_jmpc(ref_jmpc)].r1 = $6;
+	};
+
+ElseBlock: tELSE Body;
 
 /* Expressions */
 
@@ -143,12 +149,12 @@ Decl: tTYPE tID {
 	lt_check_error_declared(ref_symbols,$2, $1);
 };
 
-DeclAff: tTYPE tID tEQL Expr {
+DeclAff: tTYPE tID tAFF Expr {
 	lt_pop(ref_symbols);
 	lt_add_symbol(ref_symbols, lt_identify_type($1), $2);
 };
 
-Aff: tID tEQL Expr {
+Aff: tID tAFF Expr {
 	lt_check_error_notdeclared(ref_symbols,$1);
 	lt_add_asm_table(ref_asm, "LOAD", RA, lt_pop(ref_symbols).addr, NOARG);
 	int addr = lt_get_symbol_by_name(ref_symbols, $1)->addr;

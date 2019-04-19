@@ -18,7 +18,8 @@ void bug();
 "}"                  { return tAF;      }
 ","                  { return tCOMMA;      }
 "."                  { return tPERIOD;     }
-"="                  { return tEQL;        }
+"=="                 { return tEQL;        }
+"="                  { return tAFF;        }
 "<"                  { return tLSS;        }
 ">"                  { return tGTR;        }
 "<="                 { return tLEQ;        }

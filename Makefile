@@ -1,6 +1,6 @@
 
 compiler: lex.yy.c y.tab.c lt_symbols.c lt_instruction_asm.c
-	gcc lex.yy.c y.tab.c lt_symbols.c lt_instruction_asm.c -g -Og -o compiler -ly -ll
+	gcc lex.yy.c y.tab.c lt_symbols.c lt_instruction_asm.c lt_jmpc.c -g -Og -o compiler -ly -ll
 
 y.tab.c: compiler.y
 	yacc -d compiler.y
