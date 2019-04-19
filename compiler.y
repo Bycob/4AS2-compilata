@@ -96,8 +96,8 @@ InstructionBody: Decl | DeclAff | Aff
     | tPRINTF tPO tID tPF;
 
 IfBlock: tIF tPO ExprBool tPF {
-		lt_add_asm_table(ref_asm, "LOAD", RA, lt_get_last(ref_symbols)->addr, NOARG);
-		lt_add_asm_table(ref_asm, "JMPC", -1, RA, NOARG);
+		lt_add_asm_table(ref_asm, INSTR_LOAD, RA, lt_get_last(ref_symbols)->addr, NOARG);
+		lt_add_asm_table(ref_asm, INSTR_JMPC, -1, RA, NOARG);
 		lt_add_jmpc_table(ref_jmpc, lt_get_last_asm_id(ref_asm));
 	}
 	Body {
@@ -118,28 +118,28 @@ ExprArithm: tID
 	{
 		lt_check_error_notdeclared(ref_symbols,$1);
 		lt_add_symbol(ref_symbols,TYPE_INT, "");
-		lt_add_asm_table(ref_asm, "LOAD", RA, lt_get_symbol_by_name(ref_symbols, $1)->addr, NOARG);
-		lt_add_asm_table(ref_asm, "STORE", lt_get_last(ref_symbols)->addr, RA, NOARG);
+		lt_add_asm_table(ref_asm, INSTR_LOAD, RA, lt_get_symbol_by_name(ref_symbols, $1)->addr, NOARG);
+		lt_add_asm_table(ref_asm, INSTR_STORE, lt_get_last(ref_symbols)->addr, RA, NOARG);
 	}
     | tENTIER
 	{
 		lt_add_symbol(ref_symbols,TYPE_INT, "");
-		lt_add_asm_table(ref_asm, "AFC", RA, $1, NOARG);
-		lt_add_asm_table(ref_asm, "STORE", lt_get_last(ref_symbols)->addr, RA, NOARG);
+		lt_add_asm_table(ref_asm, INSTR_AFC, RA, $1, NOARG);
+		lt_add_asm_table(ref_asm, INSTR_STORE, lt_get_last(ref_symbols)->addr, RA, NOARG);
 	}
     | ExprArithm tPLUS ExprArithm
 	{
-		lt_add_asm_table(ref_asm, "LOAD", RA, lt_pop(ref_symbols).addr, NOARG);
-		lt_add_asm_table(ref_asm, "LOAD", RB, lt_get_last(ref_symbols)->addr, NOARG);
-		lt_add_asm_table(ref_asm, "ADD", RA, RA, RB);
-		lt_add_asm_table(ref_asm, "STORE", lt_get_last(ref_symbols)->addr, RA, NOARG);
+		lt_add_asm_table(ref_asm, INSTR_LOAD, RA, lt_pop(ref_symbols).addr, NOARG);
+		lt_add_asm_table(ref_asm, INSTR_LOAD, RB, lt_get_last(ref_symbols)->addr, NOARG);
+		lt_add_asm_table(ref_asm, INSTR_ADD, RA, RA, RB);
+		lt_add_asm_table(ref_asm, INSTR_STORE, lt_get_last(ref_symbols)->addr, RA, NOARG);
 	}
 	| ExprArithm tMINUS ExprArithm
 	{
-		lt_add_asm_table(ref_asm, "LOAD", RA, lt_pop(ref_symbols).addr, NOARG);
-		lt_add_asm_table(ref_asm, "LOAD", RB, lt_get_last(ref_symbols)->addr, NOARG);
-		lt_add_asm_table(ref_asm, "SOU", RA, RA, RB);
-		lt_add_asm_table(ref_asm, "STORE", lt_get_last(ref_symbols)->addr, RA, NOARG);
+		lt_add_asm_table(ref_asm, INSTR_LOAD, RA, lt_pop(ref_symbols).addr, NOARG);
+		lt_add_asm_table(ref_asm, INSTR_LOAD, RB, lt_get_last(ref_symbols)->addr, NOARG);
+		lt_add_asm_table(ref_asm, INSTR_SUB, RA, RA, RB);
+		lt_add_asm_table(ref_asm, INSTR_STORE, lt_get_last(ref_symbols)->addr, RA, NOARG);
 	};
 
 
@@ -156,9 +156,9 @@ DeclAff: tTYPE tID tAFF Expr {
 
 Aff: tID tAFF Expr {
 	lt_check_error_notdeclared(ref_symbols,$1);
-	lt_add_asm_table(ref_asm, "LOAD", RA, lt_pop(ref_symbols).addr, NOARG);
+	lt_add_asm_table(ref_asm, INSTR_LOAD, RA, lt_pop(ref_symbols).addr, NOARG);
 	int addr = lt_get_symbol_by_name(ref_symbols, $1)->addr;
-	lt_add_asm_table(ref_asm, "STORE", addr, RA, NOARG);
+	lt_add_asm_table(ref_asm, INSTR_STORE, addr, RA, NOARG);
 };
 
 /*LoopWhile: tWHILE ExprBool tAO Instructions tAF {
@@ -221,7 +221,7 @@ int main(int argc, char** argv) {
     // Parse
     yyparse();
 
-	lt_write_asm(ref_asm, "b.out");
+	lt_write_asm(ref_asm, "b.out", WRITE_MODE_TEXT);
 
 	free(ref_symbols);
 	free(ref_asm);
