@@ -115,7 +115,7 @@ IfElseBlock: IfHeader Body {
 		ref_asm->array[lt_pop_last_jmpc(ref_jmpc)].r1 = $5;
 	};
 	
-WhileBlock: tWHILE { $<nb>$ = lt_get_last_asm_id(ref_asm); } tPO ExprBool tPF {
+WhileBlock: tWHILE { $<nb>$ = lt_get_last_asm_id(ref_asm) + 1; } tPO ExprBool tPF {
 		lt_add_asm_table(ref_asm, INSTR_LOAD, RA, lt_pop(ref_symbols).addr, NOARG);
 		lt_add_asm_table(ref_asm, INSTR_JMPC, -1, RA, NOARG);
 		lt_add_jmpc_table(ref_jmpc, lt_get_last_asm_id(ref_asm));
