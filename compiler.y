@@ -57,10 +57,11 @@
 }
 
 %type<nb> Body
+%type<nb> Compare
+%type<nb> Operator
 %type<nb> tENTIER
 %type<str> tID Aff
 %type<str> tTYPE
-//%type<nb> Expr
 
 %%
 start:Functions;
@@ -89,30 +90,67 @@ Fdecl: tTYPE tID tPO tPF {
 Instructions: Instruction Instructions | ;
 Instruction: InstructionBody tSEMICOLON
     | IfBlock
-	| IfBlock ElseBlock
-    | tWHILE tPO ExprBool tPF Body;
+	| IfElseBlock
+    | WhileBlock;
 
 InstructionBody: Decl | DeclAff | Aff
     | tPRINTF tPO tID tPF;
 
-IfBlock: tIF tPO ExprBool tPF {
-		lt_add_asm_table(ref_asm, INSTR_LOAD, RA, lt_get_last(ref_symbols)->addr, NOARG);
+IfHeader: tIF tPO ExprBool tPF {
+		lt_add_asm_table(ref_asm, INSTR_LOAD, RA, lt_pop(ref_symbols).addr, NOARG);
 		lt_add_asm_table(ref_asm, INSTR_JMPC, -1, RA, NOARG);
 		lt_add_jmpc_table(ref_jmpc, lt_get_last_asm_id(ref_asm));
-	}
-	Body {
-		ref_asm->array[lt_pop_last_jmpc(ref_jmpc)].r1 = $6;
 	};
 
-ElseBlock: tELSE Body;
+IfBlock: IfHeader Body {
+		ref_asm->array[lt_pop_last_jmpc(ref_jmpc)].r1 = $2;
+	};
+
+IfElseBlock: IfHeader Body {
+		lt_add_asm_table(ref_asm, INSTR_JMP, -1, NOARG, NOARG);
+		// jmpc destination is `end of body address + 1` because we added a jmp at the end of the body
+		ref_asm->array[lt_pop_last_jmpc(ref_jmpc)].r1 = $2 + 1;
+		lt_add_jmpc_table(ref_jmpc, lt_get_last_asm_id(ref_asm));
+	} tELSE Body {
+		ref_asm->array[lt_pop_last_jmpc(ref_jmpc)].r1 = $5;
+	};
+	
+WhileBlock: tWHILE { $<nb>$ = lt_get_last_asm_id(ref_asm); } tPO ExprBool tPF {
+		lt_add_asm_table(ref_asm, INSTR_LOAD, RA, lt_pop(ref_symbols).addr, NOARG);
+		lt_add_asm_table(ref_asm, INSTR_JMPC, -1, RA, NOARG);
+		lt_add_jmpc_table(ref_jmpc, lt_get_last_asm_id(ref_asm));
+	} Body {
+		lt_add_asm_table(ref_asm, INSTR_JMP, $<nb>2, NOARG, NOARG);
+		// +1 because we added an instruction
+		ref_asm->array[lt_pop_last_jmpc(ref_jmpc)].r1 = $7 + 1;
+	};
 
 /* Expressions */
 
 Expr: ExprBool | ExprArithm;
 
-ExprBool: ExprArithm Compare ExprArithm;
+ExprBool: ExprArithm Compare ExprArithm {
+		lt_add_asm_table(ref_asm, INSTR_LOAD, RB, lt_pop(ref_symbols).addr, NOARG);
+		lt_add_asm_table(ref_asm, INSTR_LOAD, RA, lt_get_last(ref_symbols)->addr, NOARG);
+		lt_add_asm_table(ref_asm, $2, RA, RA, RB);
+		lt_add_asm_table(ref_asm, INSTR_STORE, lt_get_last(ref_symbols)->addr, RA, NOARG);
+	};
 
-Compare: tEQL | tLSS | tGTR | tLEQ | tGEQ;
+Compare: tEQL {
+		$$ = INSTR_EQU;
+	}
+	| tLSS {
+		$$ = INSTR_LSS;
+	}
+	| tGTR {
+		$$ = INSTR_GTR;
+	}
+	| tLEQ {
+		$$ = INSTR_LEQ;
+	}
+	| tGEQ {
+		$$ = INSTR_GEQ;
+	};
 
 ExprArithm: tID
 	{
@@ -127,26 +165,32 @@ ExprArithm: tID
 		lt_add_asm_table(ref_asm, INSTR_AFC, RA, $1, NOARG);
 		lt_add_asm_table(ref_asm, INSTR_STORE, lt_get_last(ref_symbols)->addr, RA, NOARG);
 	}
-    | ExprArithm tPLUS ExprArithm
+    | ExprArithm Operator ExprArithm
 	{
-		lt_add_asm_table(ref_asm, INSTR_LOAD, RA, lt_pop(ref_symbols).addr, NOARG);
-		lt_add_asm_table(ref_asm, INSTR_LOAD, RB, lt_get_last(ref_symbols)->addr, NOARG);
-		lt_add_asm_table(ref_asm, INSTR_ADD, RA, RA, RB);
-		lt_add_asm_table(ref_asm, INSTR_STORE, lt_get_last(ref_symbols)->addr, RA, NOARG);
-	}
-	| ExprArithm tMINUS ExprArithm
-	{
-		lt_add_asm_table(ref_asm, INSTR_LOAD, RA, lt_pop(ref_symbols).addr, NOARG);
-		lt_add_asm_table(ref_asm, INSTR_LOAD, RB, lt_get_last(ref_symbols)->addr, NOARG);
-		lt_add_asm_table(ref_asm, INSTR_SUB, RA, RA, RB);
+		lt_add_asm_table(ref_asm, INSTR_LOAD, RB, lt_pop(ref_symbols).addr, NOARG);
+		lt_add_asm_table(ref_asm, INSTR_LOAD, RA, lt_get_last(ref_symbols)->addr, NOARG);
+		lt_add_asm_table(ref_asm, $2, RA, RA, RB);
 		lt_add_asm_table(ref_asm, INSTR_STORE, lt_get_last(ref_symbols)->addr, RA, NOARG);
 	};
 
+Operator: tPLUS {
+		$$ = INSTR_ADD;
+	}
+	| tMINUS {
+		$$ = INSTR_SUB;
+	}
+	| tTIMES {
+		$$ = INSTR_MUL;
+	}
+	| tSLASH {
+		$$ = INSTR_DIV;
+	};
 
 /* Declaration instruction */
 
 Decl: tTYPE tID {
 	lt_check_error_declared(ref_symbols,$2, $1);
+	lt_add_symbol(ref_symbols, lt_identify_type($1), $2);
 };
 
 DeclAff: tTYPE tID tAFF Expr {
@@ -160,11 +204,6 @@ Aff: tID tAFF Expr {
 	int addr = lt_get_symbol_by_name(ref_symbols, $1)->addr;
 	lt_add_asm_table(ref_asm, INSTR_STORE, addr, RA, NOARG);
 };
-
-/*LoopWhile: tWHILE ExprBool tAO Instructions tAF {
-
-};*/
-
 
 //Expr: tENTIER;
 %%

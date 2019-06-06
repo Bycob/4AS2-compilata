@@ -1,10 +1,17 @@
 int main() {
-    int a = 42;
-    int b = 51;
-    int d = a + b;
-    d = a + d + a + a;
+    int a = 1;
+    int b = 1;
+    int c = 0;
+    int d = 10;
     
-    if (a == 41) {
-        a = 53;
+    while (c < 1000) {
+        c = a + b;
+        a = b;
+        b = c;
+        
+        d = d - 1;
+        if (d < 0) {
+            d = 1000 / 2;
+        }
     }
 }
