@@ -28,30 +28,30 @@ architecture data_flow of alu is
 	--constant ck_period:time := 100 ns;
 begin
 		--wait until CK' event and CK='1';
-		-- ADD 0x01
-		S <= x"00"&(('0'&A)+('0'&B)) when OP=x"01" else
-		-- MUL 0x02
-		S <= ('0'&A)*('0'&B) when OP=x"02" else
-		-- SUB 0x03
-		S <= x"00"&(('0'&A)-('0'&B)) when OP=x"03" else
-		-- DIV 0x04
-		S <= x"00"&(('0'&A)/('0'&B)) when OP=x"04" else
-		-- EQU 0x09
-		S <= x"0001" when OP=x"09" and (('0'&A)=('0'&B))else
-		S <= x"0000" when OP=x"09" and not (('0'&A)=('0'&B))else
-		-- LSS 0x0A
-		S <= x"0001" when OP=x"0A" and (('0'&A)<('0'&B)) else
-		S <= x"0000" when OP=x"0A" and not (('0'&A)<('0'&B)) else
-		-- LEQ 0x0B
-		S <= x"0001" when OP=x"0B" and (('0'&A)<=('0'&B)) else
-		S <= x"0000" when OP=x"0B" and not (('0'&A)<=('0'&B)) else
-		-- GTR 0x0C
-		S <= x"0001" when OP=x"0C" and (('0'&A)>('0'&B)) else
-		S <= x"0000" when OP=x"0C" and not (('0'&A)>('0'&B)) else
-		-- GEQ 0x0D
-		S <= x"0001" when OP=x"0D" and (('0'&A)>=('0'&B)) else
-		S <= x"0000" when OP=x"0D" and not (('0'&A)>=('0'&B)) else
+		-- ADD 0x1
+		S <= b"0000000"&(('0'&A)+('0'&B)) when OP=x"01"else
+		-- MUL 0x2
+			(A*B) when OP=x"02" else
+		-- SUB 0x3
+			b"0000000"&(('0'&A)-('0'&B)) when OP=x"03" else
+		-- DIV 0x4
+			--x"00"&(('0'&A)/('0'&B)) when OP=x"04" else
+		-- EQU 0x9
+			x"0001" when OP=x"09" and (('0'&A)=('0'&B))else
+			x"0000" when OP=x"09" and not (('0'&A)=('0'&B))else
+		-- LSS 0xA
+			x"0001" when OP=x"0A" and (('0'&A)<('0'&B)) else
+			x"0000" when OP=x"0A" and not (('0'&A)<('0'&B)) else
+		-- LEQ 0xB
+			x"0001" when OP=x"0B" and (('0'&A)<=('0'&B)) else
+			x"0000" when OP=x"0B" and not (('0'&A)<=('0'&B)) else
+		-- GTR 0xC
+			x"0001" when OP=x"0C" and (('0'&A)>('0'&B)) else
+			x"0000" when OP=x"0C" and not (('0'&A)>('0'&B)) else
+		-- GEQ 0xD
+			x"0001" when OP=x"0D" and (('0'&A)>=('0'&B)) else
+			x"0000" when OP=x"0D" and not (('0'&A)>=('0'&B));
 		
-		Sout<= S;
+		Sout <= S;
 
 end data_flow;
